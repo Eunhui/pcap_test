@@ -13,8 +13,8 @@ while True:
         line=f.readline()
         if not line:break
         domain = whois.query(line)
-        dict1 = str(domain.__dict__)
-       # result=json.dumps(dict1)
+        dict1 = domain.__dict__
+       result=json.dumps(dict1,indent=4,sort_keys=True)
         print dict1
         out.write(dict1+"\n")
 
