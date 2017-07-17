@@ -59,9 +59,7 @@
 			pEth=(struct ether_header *)packet;
 			ptype=ntohs(pEth->ether_type);
 			iph=(struct ip *)(packet+sizeof(*pEth));
-			if(iph->ip_p==IPPROTO_TCP){
-				tcph=(struct tcp*)(packet+iph->ip_hl*4);
-			}
+			
 			printf("****************MAC ADDRESS****************");	
 			printf("\nDst MAC Address: ");
 			for(int i=0;i<6;i++){
@@ -74,17 +72,30 @@
 			printf("\n");
 			if(ntohs(pEth->ether_type)==ETHERTYPE_IP){
                   	      printf("\nUpper protocal is IP HEADER(%04x)\n",ptype);
-
+				if (iph->ip_p == IPPROTO_TCP)
+       				{
+           				tcph = (struct tcp *)(packet + iph->ip_hl * 4);
+      				 }
                 
 				printf("****************ip address****************\n");
 				printf("Src Address : %s\n", inet_ntoa(iph->ip_src));
       	 			printf("Dst Address : %s\n", inet_ntoa(iph->ip_dst));
 				printf("\n****************TCP address****************\n");
-				printf("Src Port    : %d\n" , ntohs(tcph->source));
-           			 printf("Dst Port    : %d\n" , ntohs(tcph->dest));
+				printf("Src Port    : %d\n" , *(packet+34)*256+*(packet+35));
+           			 printf("Dst Port    : %d\n" , *(packet+36)*256+*(packet+37));
 				/* Print its length */
 				printf("Jacked a packet with length of [%d]\n", header->len);
 				printf("\n\n\n");
+				int k=0;
+
+				for(int i=sizeof(pEth)+sizeof(iph)+sizeof(tcph); i < header->len; i++){
+					if (k %16 ==0)
+						fprintf(stdout,"\n");
+					else
+						fprintf(stdout, "%02X ",*((u_char*)packet + i));
+					k++;				
+				}
+					printf("\n");
 			}	
 		/* And close the session */
 		
