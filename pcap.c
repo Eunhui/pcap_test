@@ -16,7 +16,8 @@
 		char filter_exp[] = "port 80";	/* The filter expression */
 		bpf_u_int32 mask;		/* Our netmask */
 		bpf_u_int32 net;		/* Our IP */
-		struct pcap_pkthdr *header;	/* The header that pcap gives us */		unsigned int ptype;
+		struct pcap_pkthdr *header;	/* The header that pcap gives us */		
+		unsigned int ptype;
 		const u_char *packet;		/* The actual packet */
 	
 		struct ip *iph;
@@ -55,6 +56,7 @@
 		
 			int ren=(int)pcap_next_ex(handle,&header,&packet);
 			if(ren==0)continue;
+			else if(ren<0)break;
 		
 			pEth=(struct ether_header *)packet;
 			ptype=ntohs(pEth->ether_type);
@@ -70,32 +72,32 @@
 				printf("%02x:",pEth->ether_shost[i]);
 			}			
 			printf("\n");
-			if(ntohs(pEth->ether_type)==ETHERTYPE_IP){
+			if(ptype==ETHERTYPE_IP){
                   	      printf("\nUpper protocal is IP HEADER(%04x)\n",ptype);
 				if (iph->ip_p == IPPROTO_TCP)
        				{
-           				tcph = (struct tcp *)(packet + iph->ip_hl * 4);
-      				 }
-                
-				printf("****************ip address****************\n");
-				printf("Src Address : %s\n", inet_ntoa(iph->ip_src));
-      	 			printf("Dst Address : %s\n", inet_ntoa(iph->ip_dst));
-				printf("\n****************TCP address****************\n");
-				printf("Src Port    : %d\n" , *(packet+34)*256+*(packet+35));
-           			 printf("Dst Port    : %d\n" , *(packet+36)*256+*(packet+37));
+           				tcph = (struct tcphdr *)(packet+sizeof(*pEth)+((iph->ip_hl) * 4));
+					printf("****************ip address****************\n");
+					printf("Src Address : %s\n", inet_ntoa(iph->ip_src));
+      	 				printf("Dst Address : %s\n", inet_ntoa(iph->ip_dst));
+					printf("\n****************TCP address****************\n");
+					printf("Src Port    : %d\n" , ntohs(tcph->source));
+           				printf("Dst Port    : %d\n" , ntohs(tcph->dest));
 				/* Print its length */
-				printf("Jacked a packet with length of [%d]\n", header->len);
-				printf("\n\n\n");
-				int k=0;
-
-				for(int i=sizeof(pEth)+sizeof(iph)+sizeof(tcph); i < header->len; i++){
-					if (k %16 ==0)
-						fprintf(stdout,"\n");
-					else
-						fprintf(stdout, "%02X ",*((u_char*)packet + i));
-					k++;				
-				}
-					printf("\n");
+					printf("Jacked a packet with length of [%d]\n", header->len);
+					
+					int k=0;
+					for(int i=sizeof(pEth)+sizeof(iph)+sizeof(tcph); i < header->len; i++){
+						if (k %16 ==0)
+							fprintf(stdout,"\n");
+						else
+							fprintf(stdout, "%02X ",*(packet + i));
+						k++;				
+					}
+      				}
+                
+				
+				printf("\n\n\n\n");
 			}	
 		/* And close the session */
 		
