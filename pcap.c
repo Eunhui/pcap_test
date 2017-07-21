@@ -17,7 +17,7 @@
 		bpf_u_int32 mask;		/* Our netmask */
 		bpf_u_int32 net;		/* Our IP */
 		struct pcap_pkthdr *header;	/* The header that pcap gives us */		
-		 int ptype;//type 
+		int ptype;//type 
 		const u_char *packet;		/* The actual packet */
 		char buf[20];
 		struct ip *iph;//ip struct
