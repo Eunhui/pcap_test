@@ -17,12 +17,12 @@
 		bpf_u_int32 mask;		/* Our netmask */
 		bpf_u_int32 net;		/* Our IP */
 		struct pcap_pkthdr *header;	/* The header that pcap gives us */		
-		unsigned int ptype;
+		 int ptype;//type 
 		const u_char *packet;		/* The actual packet */
-	
-		struct ip *iph;
-		struct tcphdr *tcph;
-		struct ether_header *pEth;
+		char buf[20];
+		struct ip *iph;//ip struct
+		struct tcphdr *tcph;//tcp struct
+		struct ether_header *pEth;//ethernet struct
 		#define IP_HEADER 0x0800
 		/* Define the device */
 		dev = pcap_lookupdev(errbuf);
@@ -78,8 +78,10 @@
        				{
            				tcph = (struct tcphdr *)(packet+sizeof(*pEth)+((iph->ip_hl) * 4));
 					printf("****************ip address****************\n");
-					printf("Src Address : %s\n", inet_ntoa(iph->ip_src));
-      	 				printf("Dst Address : %s\n", inet_ntoa(iph->ip_dst));
+					inet_ntop(AF_INET,&(iph->ip_src),buf,sizeof(buf));
+					printf("Src Address : %s\n", buf);
+					inet_ntop(AF_INET,&(iph->ip_dst),buf,sizeof(buf));
+      	 				printf("Dst Address : %s\n", buf);
 					printf("\n****************TCP address****************\n");
 					printf("Src Port    : %d\n" , ntohs(tcph->source));
            				printf("Dst Port    : %d\n" , ntohs(tcph->dest));
